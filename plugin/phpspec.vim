@@ -22,12 +22,13 @@ endif
 
 if (!exists('g:phpspec_default_mapping') || g:phpspec_default_mapping)
     map <silent> <leader>spr :PhpSpecRun<cr>
-    map <silent> <leader>spc :PhpSpecRun phpspec#runCurrentClass()<cr>
-    map <leader>spd :PhpSpecDesc<cr>
+    map <silent> <leader>spc :PhpSpecRunCurrent<cr>
+    map <leader>spd :PhpSpecDesc 
     map <silent> <leader>sps :PhpSpecSwitch<cr>
 endif
 
-command -nargs=? PhpSpecRun          call phpspec#run(<f-args>)
+command -nargs=0 PhpSpecRun          call phpspec#run()
+command -nargs=0 PhpSpecRunCurrent   call phpspec#runCurrentClass()
 command -nargs=1 PhpSpecDesc         call phpspec#descClass(<f-args>)
 command -nargs=1 PhpSpecOpenSpec     call phpspec#openSpec(<f-args>)
 command -nargs=1 PhpSpecOpenSource   call phpspec#openSource(<f-args>)
@@ -43,16 +44,14 @@ function phpspec#runCurrentClass()
     call phpspec#runClass(phpspec#getCurrentClass())
 endfunction
 
-function phpspec#run()
-    if a:0 > 0
-        let class = a:1
-    else
-        let class = ''
-    endif
+function phpspec#run(...)
+    let class = a:0 > 0 ? a:1 : ''
     call phpspec#runClass(class)
 endfunction
 
 function phpspec#runClass(class)
+    echom a:class
+
     execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
 endfunction
 
@@ -70,7 +69,14 @@ function phpspec#openSpec(class)
     if a:class == ''
         let a:class = phpspec#getCurrentClass()
     endif
-    execute(printf('edit %s', phpspec#getSpecFile(a:class)))
+    let file = phpspec#getSpecFile(a:class)
+    if filereadable(file)
+        execute(printf('edit %s', file))
+        return
+    endif
+    if 1 == confirm('No spec yet, would you like to create it?', "&Yes\n&No")
+        return phpspec#descClass(a:class)
+    endif
 endfunction
 
 function phpspec#openSource(class)
