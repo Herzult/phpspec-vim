@@ -27,16 +27,16 @@ if (!exists('g:phpspec_default_mapping') || g:phpspec_default_mapping)
     map <silent> <leader>sps :PhpSpecSwitch<cr>
 endif
 
-command -nargs=? PhpSpecRun          call phpspec#run(<args>)
-command -nargs=1 PhpSpecDesc         call phpspec#descClass(<args>)
-command -nargs=1 PhpSpecOpenSpec     call phpspec#openSpec(<args>)
-command -nargs=1 PhpSpecOpenSource   call phpspec#openSource(<args>)
+command -nargs=? PhpSpecRun          call phpspec#run(<f-args>)
+command -nargs=1 PhpSpecDesc         call phpspec#descClass(<f-args>)
+command -nargs=1 PhpSpecOpenSpec     call phpspec#openSpec(<f-args>)
+command -nargs=1 PhpSpecOpenSource   call phpspec#openSource(<f-args>)
 command -nargs=0 PhpSpecSwitch       call phpspec#switch()
 
 
 function phpspec#descClass(class)
     execute(printf('!%s', phpspec#getDescCommand(a:class)))
-    call phpspec#openSpec(class)
+    call phpspec#openSpec(a:class)
 endfunction
 
 function phpspec#runCurrentClass()
