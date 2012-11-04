@@ -20,24 +20,40 @@ if !exists('g:phpspec_source_directory')
     let g:phpspec_source_directory = './src'
 endif
 
-function phpspec#desc()
-    call inputsave()
-    let class = input('Please enter the class name: ')
-    call inputrestore()
-    if class == ''
-        echo 'That was too short!'
-        return 0
-    endif
-    call phpspec#descClass(class)
-    call phpspec#openSpec(class)
-endfunction
+if (!exists('g:phpspec_default_mapping') || g:phpspec_default_mapping)
+    map <silent> <leader>spr :PhpSpecRun<cr>
+    map <silent> <leader>spc :PhpSpecRun phpspec#runCurrentClass()<cr>
+    map <leader>spd :PhpSpecDesc<cr>
+    map <silent> <leader>sps :PhpSpecSwitch<cr>
+endif
 
-function phpspec#run()
-    call phpspec#runClass('')
+command -nargs=? PhpSpecRun          call phpspec#run(<args>)
+command -nargs=1 PhpSpecDesc         call phpspec#descClass(<args>)
+command -nargs=1 PhpSpecOpenSpec     call phpspec#openSpec(<args>)
+command -nargs=1 PhpSpecOpenSource   call phpspec#openSource(<args>)
+command -nargs=0 PhpSpecSwitch       call phpspec#switch()
+
+
+function phpspec#descClass(class)
+    execute(printf('!%s', phpspec#getDescCommand(a:class)))
+    call phpspec#openSpec(class)
 endfunction
 
 function phpspec#runCurrentClass()
     call phpspec#runClass(phpspec#getCurrentClass())
+endfunction
+
+function phpspec#run()
+    if a:0 > 0
+        let class = a:1
+    else
+        let class = ''
+    endif
+    call phpspec#runClass(class)
+endfunction
+
+function phpspec#runClass(class)
+    execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
 endfunction
 
 function phpspec#switch()
@@ -50,20 +66,18 @@ function phpspec#switch()
     endif
 endfunction
 
-function phpspec#descClass(class)
-    execute(printf('!%s', phpspec#getDescCommand(a:class)))
-endfunction
-
 function phpspec#openSpec(class)
+    if a:class == ''
+        let a:class = phpspec#getCurrentClass()
+    endif
     execute(printf('edit %s', phpspec#getSpecFile(a:class)))
 endfunction
 
 function phpspec#openSource(class)
+    if a:class == ''
+        let a:class = phpspec#getCurrentClass()
+    endif
     execute(printf('edit %s', phpspec#getSourceFile(a:class)))
-endfunction
-
-function phpspec#runClass(class)
-    execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
 endfunction
 
 function phpspec#getDescCommand(class)
@@ -102,11 +116,3 @@ function phpspec#getCurrentClass()
     endif
     throw 'Current file is not a spec nor source file.'
 endfunction
-
-"
-" define some mapping
-"
-map <silent> <leader>spr :call phpspec#run()<cr>
-map <silent> <leader>spc :call phpspec#runCurrentClass()<cr>
-map <leader>spd :call phpspec#desc()<cr>
-map <silent> <leader>sps :call phpspec#switch()<cr>
