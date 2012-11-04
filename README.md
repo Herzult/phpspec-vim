@@ -25,6 +25,10 @@ Ok, more should be comming (including doc) but for the moment, here is what you 
 
     <leader>sps
 
-### Run the specs
+### Run all the specs
 
     <leader>spr
+
+### Run spec of current class
+
+    <leader>spc
