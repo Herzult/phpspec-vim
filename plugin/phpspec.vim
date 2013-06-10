@@ -41,7 +41,7 @@ function phpspec#descClass(class)
 endfunction
 
 function phpspec#runCurrentClass()
-    call phpspec#runClass(phpspec#getCurrentClass())
+    call phpspec#runClass(phpspec#getSpecFile(phpspec#getCurrentClass()))
 endfunction
 
 function phpspec#run(...)
@@ -50,8 +50,6 @@ function phpspec#run(...)
 endfunction
 
 function phpspec#runClass(class)
-    echom a:class
-
     execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
 endfunction
 
@@ -101,7 +99,7 @@ function phpspec#getRunClassCommand(class)
 endfunction
 
 function phpspec#getSpecFile(class)
-    return fnamemodify(printf('%s/%s.php', g:phpspec_spec_directory, a:class), ':p')
+    return fnamemodify(printf('%s/%sSpec.php', g:phpspec_spec_directory, a:class), ':p')
 endfunction
 
 function phpspec#getSourceFile(class)
@@ -111,7 +109,7 @@ endfunction
 function phpspec#getCurrentClass()
     let current = expand('%:p')
     " are we in a spec file?
-    let matches = matchlist(current, printf('^%s\(.\+\)\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
+    let matches = matchlist(current, printf('^%s\(.\+\)Spec\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
     if len(matches) > 0
         return matches[1]
     endif
