@@ -5,7 +5,14 @@ endif
 let g:loaded_phpspec = 1
 
 if !exists('g:phpspec_executable')
-    let g:phpspec_executable = './bin/phpspec'
+    if filereadable('./bin/phpspec')
+        let g:phpspec_executable = './bin/phpspec'
+    elseif filereadable('./vendor/bin/phpspec')
+        let g:phpspec_executable = './vendor/bin/phpspec'
+    else
+        " fallback to path
+        let g:phpspec_executable = 'phpspec'
+    endif
 endif
 
 if !exists('g:phpspec_spec_directory')
