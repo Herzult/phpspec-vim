@@ -92,17 +92,11 @@ function phpspec#openSource(class)
 endfunction
 
 function phpspec#getDescCommand(class)
-    let parts = [g:phpspec_executable, 'desc', a:class]
-
-    add(parts, printf('--src-path=%s', g:phpspec_source_directory))
-    add(parts, printf('--spec-path=%s', g:phpspec_spec_directory))
-    add(parts, printf('--spec-namespace=%s', g:phpspec_spec_namespace))
-
-    return join(parts, ' ')
+    return printf('%s desc --no-ansi %s', g:phpspec_executable, a:class)
 endfunction
 
 function phpspec#getRunClassCommand(class)
-    return printf('%s run -fpretty %s', g:phpspec_executable, a:class)
+    return printf('%s run --no-ansi %s', g:phpspec_executable, a:class)
 endfunction
 
 function phpspec#getSpecFile(class)
