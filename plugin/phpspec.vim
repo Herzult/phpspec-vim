@@ -34,6 +34,22 @@ if (!exists('g:phpspec_default_mapping') || g:phpspec_default_mapping)
     map <silent> <leader>sps :PhpSpecSwitch<cr>
 endif
 
+if !exists('g:phpspec_run_cmd_options')
+    if (has("gui_running")) 
+        let g:phpspec_run_cmd_options = '--no-ansi'
+    else
+        let g:phpspec_run_cmd_options = '-fpretty'
+    endif
+endif
+
+if !exists('g:phpspec_desc_cmd_options')
+    if (has("gui_running")) 
+        let g:phpspec_desc_cmd_options = '--no-ansi'
+    else
+        let g:phpspec_desc_cmd_options = ''
+    endif
+endif
+
 command -nargs=0 PhpSpecRun          call phpspec#run()
 command -nargs=0 PhpSpecRunCurrent   call phpspec#runCurrentClass()
 command -nargs=1 PhpSpecDesc         call phpspec#descClass(<f-args>)
@@ -92,11 +108,11 @@ function phpspec#openSource(class)
 endfunction
 
 function phpspec#getDescCommand(class)
-    return printf('%s desc --no-ansi %s', g:phpspec_executable, a:class)
+    return printf('%s desc %s %s', g:phpspec_executable, g:phpspec_desc_cmd_options, a:class)
 endfunction
 
 function phpspec#getRunClassCommand(class)
-    return printf('%s run --no-ansi %s', g:phpspec_executable, a:class)
+    return printf('%s run %s %s', g:phpspec_executable, g:phpspec_run_cmd_options, a:class)
 endfunction
 
 function phpspec#getSpecFile(class)
