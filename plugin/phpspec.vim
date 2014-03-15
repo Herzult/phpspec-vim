@@ -91,6 +91,10 @@ function phpspec#openSpec(class)
         let a:class = phpspec#getCurrentClass()
     endif
     let file = phpspec#getSpecFile(a:class)
+    if bufexists(file)
+        execute(printf('buffer %s', file))
+        return
+    endif
     if filereadable(file)
         execute(printf('edit %s', file))
         return
@@ -104,7 +108,12 @@ function phpspec#openSource(class)
     if a:class == ''
         let a:class = phpspec#getCurrentClass()
     endif
-    execute(printf('edit %s', phpspec#getSourceFile(a:class)))
+    let file = phpspec#getSourceFile(a:class)
+    if bufexists(file)
+        execute(printf('buffer %s', file))
+        return
+    endif
+    execute(printf('edit %s', file))
 endfunction
 
 function phpspec#getDescCommand(class)
