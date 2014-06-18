@@ -68,7 +68,13 @@ function phpspec#descClass(class)
 endfunction
 
 function phpspec#runCurrentClass()
-    call phpspec#runClass(phpspec#getSpecFile(phpspec#getCurrentClass()))
+    try
+      let class = phpspec#getCurrentClass()
+    catch
+      let class = phpspec#getLastClass()
+    endtry
+    call phpspec#runClass(phpspec#getSpecFile(class))
+    call phpspec#setLastClass(class)
 endfunction
 
 function phpspec#run(...)
@@ -82,8 +88,7 @@ endfunction
 
 function phpspec#switch()
     let class = phpspec#getCurrentClass()
-    let current = expand('%:p')
-    if current == phpspec#getSpecFile(class)
+    if phpspec#getCurrentFile() == phpspec#getSpecFile(class)
         call phpspec#openSource(class)
     else
         call phpspec#openSpec(class)
@@ -142,16 +147,37 @@ function phpspec#getSourceFile(class)
 endfunction
 
 function phpspec#getCurrentClass()
-    let current = expand('%:p')
+    return phpspec#getClass(phpspec#getCurrentFile())
+endfunction
+
+function phpspec#getCurrentFile()
+    return expand('%:p')
+endfunction
+
+function phpspec#getLastClass()
+    if exists('s:last_class')
+      return s:last_class
+    else
+      throw 'Current and last files are not specs nor source files.'
+    endif
+endfunction
+
+function phpspec#setLastClass(class)
+    let s:last_class = a:class
+endfunction
+
+function phpspec#getClass(path)
     " are we in a spec file?
-    let matches = matchlist(current, printf('^%s\(.\+\)Spec\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
+    let matches = matchlist(a:path, printf('^%s\(.\+\)Spec\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
     if len(matches) > 0
         return matches[1]
     endif
     " are we in a source file?
-    let matches = matchlist(current, printf('^%s\(.\+\)\.php$', fnamemodify(g:phpspec_source_directory, ':p')))
+    let matches = matchlist(a:path, printf('^%s\(.\+\)\.php$', fnamemodify(g:phpspec_source_directory, ':p')))
     if len(matches) > 0
         return matches[1]
     endif
     throw 'Current file is not a spec nor source file.'
 endfunction
+
+
