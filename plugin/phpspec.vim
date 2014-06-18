@@ -15,6 +15,10 @@ if !exists('g:phpspec_executable')
     endif
 endif
 
+if !exists('g:phpspec_command')
+  let g:phpspec_command = '!{command}'
+endif
+
 if !exists('g:phpspec_spec_directory')
     let g:phpspec_spec_directory = './spec'
 endif
@@ -59,12 +63,18 @@ command -nargs=0 PhpSpecSwitch       call phpspec#switch()
 
 
 function phpspec#descClass(class)
-    execute(printf('!%s', phpspec#getDescCommand(a:class)))
+    execute phpspec#getDescCommand(a:class)
     call phpspec#openSpec(a:class)
 endfunction
 
 function phpspec#runCurrentClass()
-    call phpspec#runClass(phpspec#getSpecFile(phpspec#getCurrentClass()))
+    try
+      let class = phpspec#getCurrentClass()
+    catch
+      let class = phpspec#getLastClass()
+    endtry
+    call phpspec#runClass(phpspec#getSpecFile(class))
+    call phpspec#setLastClass(class)
 endfunction
 
 function phpspec#run(...)
@@ -73,13 +83,12 @@ function phpspec#run(...)
 endfunction
 
 function phpspec#runClass(class)
-    execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
+    execute phpspec#getRunClassCommand(a:class)
 endfunction
 
 function phpspec#switch()
     let class = phpspec#getCurrentClass()
-    let current = expand('%:p')
-    if current == phpspec#getSpecFile(class)
+    if phpspec#getCurrentFile() == phpspec#getSpecFile(class)
         call phpspec#openSource(class)
     else
         call phpspec#openSpec(class)
@@ -121,7 +130,12 @@ function phpspec#getDescCommand(class)
 endfunction
 
 function phpspec#getRunClassCommand(class)
-    return printf('%s run %s %s', g:phpspec_executable, g:phpspec_run_cmd_options, a:class)
+    let command = printf('%s run %s %s', g:phpspec_executable, g:phpspec_run_cmd_options, a:class)
+    return phpspec#getPhpspecCommand(command)
+endfunction
+
+function phpspec#getPhpspecCommand(command)
+    return substitute(g:phpspec_command, '{command}', a:command, 'g')
 endfunction
 
 function phpspec#getSpecFile(class)
@@ -133,16 +147,37 @@ function phpspec#getSourceFile(class)
 endfunction
 
 function phpspec#getCurrentClass()
-    let current = expand('%:p')
+    return phpspec#getClass(phpspec#getCurrentFile())
+endfunction
+
+function phpspec#getCurrentFile()
+    return expand('%:p')
+endfunction
+
+function phpspec#getLastClass()
+    if exists('s:last_class')
+      return s:last_class
+    else
+      throw 'Current and last files are not specs nor source files.'
+    endif
+endfunction
+
+function phpspec#setLastClass(class)
+    let s:last_class = a:class
+endfunction
+
+function phpspec#getClass(path)
     " are we in a spec file?
-    let matches = matchlist(current, printf('^%s\(.\+\)Spec\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
+    let matches = matchlist(a:path, printf('^%s\(.\+\)Spec\.php$', fnamemodify(g:phpspec_spec_directory, ':p')))
     if len(matches) > 0
         return matches[1]
     endif
     " are we in a source file?
-    let matches = matchlist(current, printf('^%s\(.\+\)\.php$', fnamemodify(g:phpspec_source_directory, ':p')))
+    let matches = matchlist(a:path, printf('^%s\(.\+\)\.php$', fnamemodify(g:phpspec_source_directory, ':p')))
     if len(matches) > 0
         return matches[1]
     endif
     throw 'Current file is not a spec nor source file.'
 endfunction
+
+
