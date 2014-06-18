@@ -15,6 +15,10 @@ if !exists('g:phpspec_executable')
     endif
 endif
 
+if !exists('g:phpspec_command')
+  let g:phpspec_command = '!{command}'
+endif
+
 if !exists('g:phpspec_spec_directory')
     let g:phpspec_spec_directory = './spec'
 endif
@@ -59,7 +63,7 @@ command -nargs=0 PhpSpecSwitch       call phpspec#switch()
 
 
 function phpspec#descClass(class)
-    execute(printf('!%s', phpspec#getDescCommand(a:class)))
+    execute phpspec#getDescCommand(a:class)
     call phpspec#openSpec(a:class)
 endfunction
 
@@ -73,7 +77,7 @@ function phpspec#run(...)
 endfunction
 
 function phpspec#runClass(class)
-    execute(printf('!%s', phpspec#getRunClassCommand(a:class)))
+    execute phpspec#getRunClassCommand(a:class)
 endfunction
 
 function phpspec#switch()
@@ -121,7 +125,12 @@ function phpspec#getDescCommand(class)
 endfunction
 
 function phpspec#getRunClassCommand(class)
-    return printf('%s run %s %s', g:phpspec_executable, g:phpspec_run_cmd_options, a:class)
+    let command = printf('%s run %s %s', g:phpspec_executable, g:phpspec_run_cmd_options, a:class)
+    return phpspec#getPhpspecCommand(command)
+endfunction
+
+function phpspec#getPhpspecCommand(command)
+    return substitute(g:phpspec_command, '{command}', a:command, 'g')
 endfunction
 
 function phpspec#getSpecFile(class)
