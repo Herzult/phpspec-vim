@@ -9,6 +9,8 @@ if !exists('g:phpspec_executable')
         let g:phpspec_executable = './bin/phpspec'
     elseif filereadable('./vendor/bin/phpspec')
         let g:phpspec_executable = './vendor/bin/phpspec'
+    elseif filereadable('./vendor/phpspec/phpspec/bin/phpspec')
+        let g:phpspec_executable = './vendor/phpspec/phpspec/bin/phpspec'
     else
         " fallback to path
         let g:phpspec_executable = 'phpspec'
