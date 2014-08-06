@@ -128,7 +128,8 @@ function phpspec#openSource(class)
 endfunction
 
 function phpspec#getDescCommand(class)
-    return printf('%s desc %s %s', g:phpspec_executable, g:phpspec_desc_cmd_options, a:class)
+    let command = printf('%s desc %s %s', g:phpspec_executable, g:phpspec_desc_cmd_options, a:class)
+    return phpspec#getPhpspecCommand(command)
 endfunction
 
 function phpspec#getRunClassCommand(class)
